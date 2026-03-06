@@ -144,40 +144,25 @@
                 
                 const tidalId = tidalUrl.match(/track\/(\d+)/)[1];
                 
-                const apis = [
-                    'https://triton.squid.wtf',
-                    'https://hifi-one.spotisaver.net',
-                    'https://hifi-two.spotisaver.net'
-                ];
+                const apiUrl = `https://triton.squid.wtf/track/?id=${tidalId}&quality=HI_RES`;
+                const res = await fetch(apiUrl);
+                const data = await res.json();
                 
                 let audioUrl = null;
-                for (const api of apis) {
-                    try {
-                        const apiUrl = `${api}/track/?id=${tidalId}&quality=HI_RES`;
-                        const res = await fetch(proxy + encodeURIComponent(apiUrl));
-                        const data = await res.json();
-                        
-                        // Check for direct URL format
-                        if (data[0]?.OriginalTrackUrl) {
-                            audioUrl = data[0].OriginalTrackUrl;
-                            break;
-                        }
-                        
-                        // Check for manifest format
-                        if (data.data?.manifest) {
-                            const manifestBase64 = data.data.manifest;
-                            const manifestJson = atob(manifestBase64);
-                            const manifest = JSON.parse(manifestJson);
-                            
-                            // Extract URL from manifest
-                            if (manifest.urls && manifest.urls[0]) {
-                                audioUrl = manifest.urls[0];
-                                break;
-                            }
-                        }
-                    } catch (e) { 
-                        console.log('API error:', e);
-                        continue; 
+                
+                // Check for direct URL format
+                if (data[0]?.OriginalTrackUrl) {
+                    audioUrl = data[0].OriginalTrackUrl;
+                }
+                // Check for manifest format
+                else if (data.data?.manifest) {
+                    const manifestBase64 = data.data.manifest;
+                    const manifestJson = atob(manifestBase64);
+                    const manifest = JSON.parse(manifestJson);
+                    
+                    // Extract URL from manifest
+                    if (manifest.urls && manifest.urls[0]) {
+                        audioUrl = manifest.urls[0];
                     }
                 }
                 
