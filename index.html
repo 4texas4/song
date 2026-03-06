@@ -157,11 +157,28 @@
                         const res = await fetch(proxy + encodeURIComponent(apiUrl));
                         const data = await res.json();
                         
+                        // Check for direct URL format
                         if (data[0]?.OriginalTrackUrl) {
                             audioUrl = data[0].OriginalTrackUrl;
                             break;
                         }
-                    } catch (e) { continue; }
+                        
+                        // Check for manifest format
+                        if (data.data?.manifest) {
+                            const manifestBase64 = data.data.manifest;
+                            const manifestJson = atob(manifestBase64);
+                            const manifest = JSON.parse(manifestJson);
+                            
+                            // Extract URL from manifest
+                            if (manifest.urls && manifest.urls[0]) {
+                                audioUrl = manifest.urls[0];
+                                break;
+                            }
+                        }
+                    } catch (e) { 
+                        console.log('API error:', e);
+                        continue; 
+                    }
                 }
                 
                 if (!audioUrl) throw new Error('Could not get audio URL');
