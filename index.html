@@ -133,17 +133,17 @@
             document.getElementById('nowPlaying').textContent = `${name} - ${artist}`;
             
             try {
-                // Get Tidal URL
-                const songLinkRes = await fetch(`https://api.song.link/v1-alpha.1/links?url=https://open.spotify.com/track/${spotifyId}`);
+                const proxy = '/api/proxy?url=';
+                
+                const songLinkUrl = `https://api.song.link/v1-alpha.1/links?url=${encodeURIComponent('https://open.spotify.com/track/' + spotifyId)}`;
+                const songLinkRes = await fetch(proxy + encodeURIComponent(songLinkUrl));
                 const songLinkData = await songLinkRes.json();
                 const tidalUrl = songLinkData.linksByPlatform?.tidal?.url;
                 
                 if (!tidalUrl) throw new Error('Tidal link not found');
                 
-                // Extract Tidal track ID
                 const tidalId = tidalUrl.match(/track\/(\d+)/)[1];
                 
-                // Try APIs in order
                 const apis = [
                     'https://triton.squid.wtf',
                     'https://hifi-one.spotisaver.net',
@@ -153,7 +153,8 @@
                 let audioUrl = null;
                 for (const api of apis) {
                     try {
-                        const res = await fetch(`${api}/track/?id=${tidalId}&quality=HI_RES`);
+                        const apiUrl = `${api}/track/?id=${tidalId}&quality=HI_RES`;
+                        const res = await fetch(proxy + encodeURIComponent(apiUrl));
                         const data = await res.json();
                         
                         if (data[0]?.OriginalTrackUrl) {
@@ -165,7 +166,6 @@
                 
                 if (!audioUrl) throw new Error('Could not get audio URL');
                 
-                // Play audio
                 const audio = document.getElementById('audio');
                 audio.src = audioUrl;
                 audio.style.display = 'block';
