@@ -144,7 +144,7 @@
                 
                 const tidalId = tidalUrl.match(/track\/(\d+)/)[1];
                 
-                const apiUrl = `https://triton.squid.wtf/track/?id=${tidalId}&quality=HI_RES`;
+                const apiUrl = `https://triton.squid.wtf/track/?id=${tidalId}&quality=LOSSLESS`;
                 const res = await fetch(apiUrl);
                 const data = await res.json();
                 
