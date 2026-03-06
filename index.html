@@ -154,15 +154,21 @@
                 if (data[0]?.OriginalTrackUrl) {
                     audioUrl = data[0].OriginalTrackUrl;
                 }
-                // Check for manifest format
+                // Check for manifest format (DASH XML)
                 else if (data.data?.manifest) {
                     const manifestBase64 = data.data.manifest;
-                    const manifestJson = atob(manifestBase64);
-                    const manifest = JSON.parse(manifestJson);
+                    const manifestXml = atob(manifestBase64);
                     
-                    // Extract URL from manifest
-                    if (manifest.urls && manifest.urls[0]) {
-                        audioUrl = manifest.urls[0];
+                    // Parse XML and extract initialization URL
+                    const parser = new DOMParser();
+                    const xmlDoc = parser.parseFromString(manifestXml, 'text/xml');
+                    const segmentTemplate = xmlDoc.querySelector('SegmentTemplate');
+                    
+                    if (segmentTemplate) {
+                        const initUrl = segmentTemplate.getAttribute('initialization');
+                        if (initUrl) {
+                            audioUrl = initUrl.split('?')[0]; // Remove token params
+                        }
                     }
                 }
                 
