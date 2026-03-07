@@ -1,23 +1,24 @@
 export default async function handler(req, res) {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-    
-    if (req.method === 'OPTIONS') {
-        return res.status(200).end();
-    }
 
-    const { url } = req.query;
+const { gid, track } = req.query;
 
-    if (!url) {
-        return res.status(400).json({ error: 'Missing url parameter' });
-    }
+if(!gid || !track){
+return res.status(400).json({error:"missing gid or track"});
+}
 
-    try {
-        const response = await fetch(url);
-        const data = await response.json();
-        return res.status(response.status).json(data);
-    } catch (error) {
-        return res.status(500).json({ error: error.message });
-    }
+const url = `https://api.apps.web.id/spotify/start/${gid}/${track}`;
+
+const r = await fetch(url,{
+headers:{
+"referer":"https://afianf.vercel.app/",
+"origin":"https://afianf.vercel.app",
+"accept":"*/*",
+"user-agent":"Mozilla/5.0"
+}
+});
+
+const data = await r.json();
+
+res.status(200).json(data);
+
 }
