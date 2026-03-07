@@ -1,5 +1,13 @@
 export default async function handler(req, res) {
 
+res.setHeader("Access-Control-Allow-Origin", "*");
+res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+res.setHeader("Access-Control-Allow-Headers", "*");
+
+if (req.method === "OPTIONS") {
+return res.status(200).end();
+}
+
 try {
 
 const { gid, track } = req.query;
@@ -24,17 +32,7 @@ headers:{
 });
 
 const text = await r.text();
-
-let data;
-
-try{
-data = JSON.parse(text);
-}catch{
-return res.status(403).json({
-error:"API blocked request",
-raw:text.slice(0,200)
-});
-}
+const data = JSON.parse(text);
 
 res.status(200).json(data);
 
