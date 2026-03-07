@@ -1,9 +1,14 @@
 export default async function handler(req, res) {
 
+try {
+
 const { gid, track } = req.query;
 
-if(!gid || !track){
-return res.status(400).json({error:"missing gid or track"});
+if (!gid || !track) {
+return res.status(400).json({
+error: "Missing gid or track",
+query: req.query
+});
 }
 
 const url = `https://api.apps.web.id/spotify/start/${gid}/${track}`;
@@ -17,8 +22,28 @@ headers:{
 }
 });
 
-const data = await r.json();
+const text = await r.text();
 
-res.status(200).json(data);
+let data;
+
+try{
+data = JSON.parse(text);
+}catch{
+return res.status(500).json({
+error:"API did not return JSON",
+raw:text
+});
+}
+
+return res.status(200).json(data);
+
+}catch(err){
+
+return res.status(500).json({
+error:"Serverless function crashed",
+message:err.message
+});
+
+}
 
 }
